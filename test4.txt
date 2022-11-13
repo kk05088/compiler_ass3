@@ -1,0 +1,11 @@
+int try_0(char sample)
+{
+for(int a (*b); h < x; i++)
+{
+if(a > b)
+{
+a = x;
+}
+else{return b;}
+}
+}

@@ -1,0 +1,4 @@
+int foo(char sample)
+{
+int a = b, bool = c, float = d;
+}
