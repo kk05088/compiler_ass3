@@ -140,7 +140,7 @@ def handle_identifier(sym: str):
         if sym in id_info.values():
             # get the key
             key = list(id_info.keys())[list(id_info.values()).index(sym)]
-            token_stream += f'<id,{key}>'
+            token_stream += f'<id,{key},{sym}>'
         else:
             # add to symbol table
             id_info[table_ptr] = sym

@@ -1,9 +1,4 @@
 
-global scope_count
-
-scope_count = 0
-SymbolTable = dict()
-
 # attr_list = ["ptr", "name" , "type", "return_type", "value", "scope", \
 #             "prev", "next"]      
 

@@ -5,6 +5,8 @@ from symTable import *
 
 
 global glob_table
+global scope
+scope = 0
 
 glob_table = dict()
 
@@ -21,12 +23,12 @@ def remove_brackets(tokens):
         tokens[i][0] = tokens[i][0][1:]
     return tokens
 
-test,id_info = main("test4.txt")
+test,id_info = main("test3.txt")
 
 global token_list
 token_list = remove_brackets(read_lex_output(test))
 token_list.append(["EOF"])
-# print(token_list)
+print(token_list)
 
 
 # #string for writing error messages
@@ -62,11 +64,14 @@ def match(char):
 
 def Program(): #function definition & will have synthesised attribute
 
+    global scope
 
-    glob_table[scope_count] = {}
+    glob_table[scope] = {}
     
     entry = Id()
-    entry.scope = scope_count
+    entry.in_scope = scope
+
+    # entry.scope = scope
 
     # print("here")
     if match('dt'):
@@ -77,14 +82,29 @@ def Program(): #function definition & will have synthesised attribute
             entry.name = token_list[index-1][1]
             if match('('):
                 # print('sup2')
+                entry.next = dict()
+                scope += 1
+                entry.next[scope] = {}
+
                 arg_list = []
-                if ParamList(arg_list, scope_count):
-                    # print('print')
+
+
+                if ParamList(arg_list, scope):
+                    s = ""
+                    #cocatenates parameter types and inserts into function type
+                    for i in arg_list:
+                        s = s + i.type
+
+                    entry.next[scope] = s
                     if match(')'):
+                        arg_list = []
+                        scope -= 1
                         # print('broter')
                         if match('{'):
+                            scope += 1
                             if Stmts():
                                 if match('}'):
+                                    scope -= 1
                                     return True, 'lesgoo'
                                 else:
                                     return False, "punctuator '}' expected but wasn't provided"
@@ -112,16 +132,16 @@ def ParamList(arg_list, scope_count):
     if match('dt'):
         # print('alpha')
         var_entry.type = token_list[index-1][1]
-        if match('id'):
+        arg_list.append(var_entry)
 
+        if match('id'):
             # print('beta')
             var_entry.name = token_list[index-1][1]
-            arg_list.append(var_entry)
 
             if PList(arg_list, scope_count):
                 return True, arg_list
             else:
-                return True
+                return True, arg_list, 
         else:
             return False, "missing/unrecognized identifier"
     else:
@@ -131,10 +151,10 @@ def ParamList(arg_list, scope_count):
 def PList(arg_list,scope_count):
     var_entry = Id()
     var_entry.in_scope = scope_count
-
+    
     if match('?'):
         if match('dt'):
-            var_entry.type = todecken_list[index-1][1]
+            var_entry.type = token_list[index-1][1]
             # print('hello')
             if match('id'):
                 var_entry.name = token_list[index-1][2]
