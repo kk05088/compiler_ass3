@@ -1,4 +1,5 @@
 #match characters
+from lib2to3.pgen2 import token
 from xml.etree.ElementTree import TreeBuilder
 from analyser import main
 from symTable import *
@@ -6,6 +7,9 @@ from symTable import *
 
 global glob_table
 global scope
+global arg_list
+
+arg_list = []
 scope = 0
 
 glob_table = dict()
@@ -82,27 +86,27 @@ def Program(): #function definition & will have synthesised attribute
             entry.name = token_list[index-1][1]
             if match('('):
                 # print('sup2')
-                entry.next = dict()
+                entry.sym_t = dict()
                 scope += 1
-                entry.next[scope] = {}
+                entry.sym_t[scope] = {}
 
                 arg_list = []
 
-
-                if ParamList(arg_list, scope):
+                if ParamList(arg_list, scope, entry):
                     s = ""
-                    #cocatenates parameter types and inserts into function type
+                    #concatenates parameter types and inserts into function type
                     for i in arg_list:
                         s = s + i.type
+                    entry.type = s
 
-                    entry.next[scope] = s
                     if match(')'):
                         arg_list = []
                         scope -= 1
                         # print('broter')
                         if match('{'):
                             scope += 1
-                            if Stmts():
+                            #this is also in functions scope
+                            if Stmts(arg_list, scope,entry):
                                 if match('}'):
                                     scope -= 1
                                     return True, 'lesgoo'
@@ -124,10 +128,11 @@ def Program(): #function definition & will have synthesised attribute
         return False, "missing incorrect datatype"
 
 
-def ParamList(arg_list, scope_count):
-    
+def ParamList(arg_list, scope,entry):
+
+
     var_entry = Id()
-    var_entry.in_scope = scope_count
+    var_entry.in_scope = scope
 
     if match('dt'):
         # print('alpha')
@@ -138,7 +143,7 @@ def ParamList(arg_list, scope_count):
             # print('beta')
             var_entry.name = token_list[index-1][1]
 
-            if PList(arg_list, scope_count):
+            if PList(arg_list, scope, entry):
                 return True, arg_list
             else:
                 return True, arg_list, 
@@ -148,9 +153,12 @@ def ParamList(arg_list, scope_count):
         return False, "missing/incorrect datatype"
 
 
-def PList(arg_list,scope_count):
+def PList(arg_list, scope, entry):
+
+
     var_entry = Id()
-    var_entry.in_scope = scope_count
+    var_entry.in_scope = scope
+
     
     if match('?'):
         if match('dt'):
@@ -161,7 +169,7 @@ def PList(arg_list,scope_count):
                 # print(token_list[index-1][2])
                 arg_list.append(var_entry)
                 # if token_list[index][0] == ',':
-                #     PList(arg_list, scope_count)
+                #     PList(arg_list, scope)
                 
                 # else:
                 #     return 
@@ -174,14 +182,19 @@ def PList(arg_list,scope_count):
         return False, "punctuator '?' or ')' expected but wasn't provided"
 
 
-def F():
+def F(scope, entry):
     # print(token_list[index])
-    if match('id'):
-        return True
+    var_entry = Id()
+    var_entry.in_scope = scope
 
+    if match('id'):
+        var_entry.name = token_list[index-1][1]
+        entry.sym_t[scope] = var_entry
+        return True
+    
     elif match('('):
         # print('here')
-        if (E()):
+        if (E(scope,entry)):
             # print('over')
             if (match(')')):
                 return True
@@ -207,8 +220,8 @@ def T_prime():
         # print('hello')
         return True
     
-def T():
-    if (F()):
+def T(scope, entry):
+    if (F(scope, entry)):
         if (T_prime()):
             return True
     else:
@@ -222,8 +235,8 @@ def E_prime():
     else:
         return True
 
-def E():
-    if (T()):
+def E(scope, entry):
+    if (T(scope, entry)):
         if (E_prime()):
             return True
 
@@ -247,13 +260,22 @@ def AssignStmt():
         return False, "identifier expected but wasn't provided"
 
 
+def DecStmts(arg_list, scope, entry):
+    var = Id()
 
-def DecStmts():
+    var.in_scope = scope
+    
+    var.prev = entry.sym_t
+
     # print("in dec")
+
     if match('dt'):
+        var.type = token_list[index-1][1]
         # print('here')
+
         if match('id'):
-            if OptionalAssign():
+            var.name = var.type = token_list[index-1][1]
+            if OptionalAssign(scope, entry):
                 print('bhaijaan')
                 return True
             else:
@@ -265,7 +287,8 @@ def DecStmts():
         return False, "missing/incorrect datatype"
 
 
-def OptionalAssign():
+def OptionalAssign(scope, entry):
+
     if (match('=')):
         if (E()):
             if match(';'):
@@ -395,14 +418,15 @@ def ReturnStmt():
     else:
         return False, "keyword 'return' expected but wasn't provided"
 
-def Stmts():
-    if S_prime():
+def Stmts(arg_list, scope):
+    if S_prime(arg_list, scope):
         return True
 
-def S_prime():
+def S_prime(arg_list, scope):
     if token_list[index] == '}':
         pass
-    elif DecStmts():
+
+    elif DecStmts(arg_list, scope):
         return True
 
     elif AssignStmt():
