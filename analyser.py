@@ -9,7 +9,7 @@ KEYWORDS = {'and', 'break', 'continue', 'else', 'false', 'for', 'if', 'mod',\
 DATA_TYPES = {'bool', 'char', 'int', 'float'}
 REL_OPS = {'<', '<=', '>', '>=', '==', '!='}
 ARITH_OPS = {"+","-","*","/","^"}
-PUNCTUATION = {'=', '{', '}', '(', ')', ';', '[', ']', "'" ,'”' , ','}
+PUNCTUATION = {'=', '{', '}', '(', ')', ';', '[', ']', "?" ,'”' , "'"}
 
 # global vars
 token_stream = ""

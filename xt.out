@@ -1,1 +1,1 @@
-<dt,int><id,1,foo><(><dt,char><id,2,sample><)><{><dt,int><id,3,a><;><}>
+<dt,int><id,1,try_0><(><dt,char><id,2,sample><)><{><for><(><dt,int><id,3,a><(><id,4,*b><)><;><id,5,h><rel_op, <><id,6,x><;><id,7,i++><)><{><if><(><id,3><rel_op, >><id,8,b><)><{><id,3><=><id,6><;><}><else><{><return><id,8><;><}><}><}>
