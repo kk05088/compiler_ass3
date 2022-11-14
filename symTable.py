@@ -31,10 +31,10 @@ class Id:
     name = None
     type = None
     return_type = None
-    value = None
+    # value = None
     in_scope = None
     prev = None
-    next = None
+    sym_t = None
     
 
 
