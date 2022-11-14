@@ -31,7 +31,6 @@ class Id:
     name = None
     type = None
     return_type = None
-    # value = None
     in_scope = None
     prev = None
     sym_t = None

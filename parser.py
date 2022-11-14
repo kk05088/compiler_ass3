@@ -12,7 +12,7 @@ global arg_list
 arg_list = []
 scope = 0
 
-glob_table = dict()
+glob_table = {}
 
 def read_lex_output(lex_output):
     tokens = []
@@ -27,12 +27,12 @@ def remove_brackets(tokens):
         tokens[i][0] = tokens[i][0][1:]
     return tokens
 
-test,id_info = main("test3.txt")
+test,id_info = main("test2.txt")
 
 global token_list
 token_list = remove_brackets(read_lex_output(test))
 token_list.append(["EOF"])
-print(token_list)
+# print(token_list)
 
 
 # #string for writing error messages
@@ -74,6 +74,8 @@ def Program(): #function definition & will have synthesised attribute
     
     entry = Id()
     entry.in_scope = scope
+    glob_table[scope] = entry
+    print(glob_table)
 
     # entry.scope = scope
 
@@ -83,10 +85,10 @@ def Program(): #function definition & will have synthesised attribute
         # id_type = token_list[index-1][1]
         # print(dt_type)
         if match('id'):
-            entry.name = token_list[index-1][1]
+            entry.name = token_list[index-1][2]
             if match('('):
                 # print('sup2')
-                entry.sym_t = dict()
+                entry.sym_t = {}
                 scope += 1
                 entry.sym_t[scope] = {}
 
@@ -106,7 +108,7 @@ def Program(): #function definition & will have synthesised attribute
                         if match('{'):
                             scope += 1
                             #this is also in functions scope
-                            if Stmts(arg_list, scope,entry):
+                            if Stmts(scope,entry):
                                 if match('}'):
                                     scope -= 1
                                     return True, 'lesgoo'
@@ -130,7 +132,6 @@ def Program(): #function definition & will have synthesised attribute
 
 def ParamList(arg_list, scope,entry):
 
-
     var_entry = Id()
     var_entry.in_scope = scope
 
@@ -142,7 +143,7 @@ def ParamList(arg_list, scope,entry):
         if match('id'):
             # print('beta')
             var_entry.name = token_list[index-1][1]
-
+            # glob_table[scope]
             if PList(arg_list, scope, entry):
                 return True, arg_list
             else:
@@ -168,17 +169,11 @@ def PList(arg_list, scope, entry):
                 var_entry.name = token_list[index-1][2]
                 # print(token_list[index-1][2])
                 arg_list.append(var_entry)
-                # if token_list[index][0] == ',':
-                #     PList(arg_list, scope)
-                
-                # else:
-                #     return 
+
                 if PList():
                     return True
     else:
         # print('pls')
-        # if match(')'):
-        #     return True
         return False, "punctuator '?' or ')' expected but wasn't provided"
 
 
@@ -190,6 +185,7 @@ def F(scope, entry):
     if match('id'):
         var_entry.name = token_list[index-1][1]
         entry.sym_t[scope] = var_entry
+        print(var_entry)
         return True
     
     elif match('('):
@@ -206,12 +202,12 @@ def F(scope, entry):
     else:
         return False, "punctuator '(' or identifier expected but wasn't provided"
 
-def T_prime():
+def T_prime(scope, entry):
     # print('hello2')
     if (match('*')):
         # print('ello3')
-        if (F()):
-            if (T_prime()):
+        if (F(scope, entry)):
+            if (T_prime(scope, entry)):
                 # print('nub')
                 return True
         else:
@@ -222,22 +218,22 @@ def T_prime():
     
 def T(scope, entry):
     if (F(scope, entry)):
-        if (T_prime()):
+        if (T_prime(scope, entry)):
             return True
     else:
         return False, "factor expected but wasn't provided"
 
-def E_prime():
+def E_prime(scope, entry):
     if (match('+')):
-        if (T()):
-            if (E_prime()):
+        if (T(scope, entry)):
+            if (E_prime(scope, entry)):
                 return True
     else:
         return True
 
 def E(scope, entry):
     if (T(scope, entry)):
-        if (E_prime()):
+        if (E_prime(scope, entry)):
             return True
 
     else:
@@ -260,11 +256,10 @@ def AssignStmt():
         return False, "identifier expected but wasn't provided"
 
 
-def DecStmts(arg_list, scope, entry):
-    var = Id()
+def DecStmts(scope, entry):
 
+    var = Id()
     var.in_scope = scope
-    
     var.prev = entry.sym_t
 
     # print("in dec")
@@ -276,10 +271,10 @@ def DecStmts(arg_list, scope, entry):
         if match('id'):
             var.name = var.type = token_list[index-1][1]
             if OptionalAssign(scope, entry):
-                print('bhaijaan')
+                # print('bhaijaan')
                 return True
             else:
-                if List():
+                if List(scope, entry):
                     return True
         else:
             return False,"missing/unrecognized identifier"
@@ -290,7 +285,7 @@ def DecStmts(arg_list, scope, entry):
 def OptionalAssign(scope, entry):
 
     if (match('=')):
-        if (E()):
+        if (E(scope, entry)):
             if match(';'):
                 # print('mayn')
                 return True
@@ -300,13 +295,13 @@ def OptionalAssign(scope, entry):
     else:
         return True
 
-def List():
+def List(scope, entry):
     if match('?'):
         if match('dt'):
-            if OptionalAssign():
+            if OptionalAssign(scope, entry):
                 return True
             else:
-                if List():
+                if List(scope, entry):
                     return True
         else:
             return False, "no dt given"
@@ -450,6 +445,10 @@ def S_prime(arg_list, scope):
 def test():
 
     test = Program()
+
+    print(glob_table[scope])
+    # for i in glob_table[scope]:
+    #     print(i)
     # print(test)
     if test[0]:
         print(test[1])
