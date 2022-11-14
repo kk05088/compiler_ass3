@@ -197,4 +197,4 @@ def main(filename):
     return token_stream, id_info
 
 
-main("test2.txt")
+# main("test2.txt")

@@ -1,1 +1,1 @@
-<dt,int><id,1,foo><(><dt,char><id,2,sample><)><{><dt,int><id,3,a><=><id,4,b><;><}><dt,int><id,5,main><(><dt,int><id,3><,><dt,int><id,4><)><{><}><;>
+<dt,int><id,1,foo><(><dt,char><id,2,sample><)><{><dt,int><id,3,a><;><}>

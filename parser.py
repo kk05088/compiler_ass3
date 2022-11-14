@@ -20,12 +20,8 @@ def remove_brackets(tokens):
         tokens[i][0] = tokens[i][0][1:]
     return tokens
 
-test,id_info = main("test1.txt")
-# print(id_info)
-# print(test)
-# input_string = "<dt,int><id, 1><(><void><)><{><dt,int><id, 2><[><]><;><dt,int><id, 3><=><num, 4><;><while><(><id, 3><rel_op, >><num, 5><)><{><id, 2><[><id, 3><]><=><(><><id, 3><)><+><num, 6><><num, 7><;><id, 3><=><id, 3><-><num, 8><;><}><return><num, 9><;><}>"
-# test = "<dt><id><(><dt><id><)><{><}><;>"
-# <dt,int> <id,main> <(> <dt, int> <id,a> <)> <{> <}> <;>
+test,id_info = main("test2.txt")
+
 global token_list
 token_list = remove_brackets(read_lex_output(test))
 
@@ -38,29 +34,51 @@ global error_string
 error_string = ""
 
 global index
+global token_string
+
 index = 0
 
 def match(char):
-    print(char)
     global index
-    global token_list
+    # print(index, len(token_list))
+    if index+1 == len(token_list):
+        print('sup')
+        return False
 
-    var = None
-    if token_list[index][0] == char:
-        # print(char)
-        if char == 'dt' and len(token_list[index]) == 2:
-            # print(token_list[index],"hello")
-            var = token_list[index][1]  
-            print(var)
-            # return True, var
+    else:
+        str = token_list[index][0]
 
-        elif char == 'id' and len(token_list[index]) == 3:
-            var = token_list[index][2]
-            print(var)
-            # return True, var
-        index += 1
-        return True, var
-    return False, var 
+        if str == char:
+            index +=1
+            return True
+
+        else:
+            index += 1
+            return False
+
+
+# def match(char):
+#     global index
+
+#     var = None
+#     if token_list[index][0] == char:
+#         print(token_list[index][0])
+#         # print(char)
+#         if char == 'dt' and len(token_list[index]) == 2:
+#             # print(token_list[index],"hello")
+#             var = token_list[index][1]  
+#             print(var)
+#             # return True, var
+
+#         elif char == 'id' and len(token_list[index]) == 3:
+#             var = token_list[index][2]
+#             print(var)
+#             # return True, var
+#         index += 1
+#         return True, var
+
+#     else:
+#         return False, var 
 
 
 
@@ -80,29 +98,31 @@ def Program(): #function definition & will have synthesised attribute
         if match('id'):
             entry.name = token_list[index-1][1]
             if match('('):
+                print('sup2')
                 arg_list = []
                 if ParamList(arg_list, scope_count):
+                    
                     # for i in arg_list:
                     #     print(i)
                     if match(')'):
                         if match('{'):
-                            if S_prime():
+                            if Stmts():
                                 if match('}'):
                                     return True
                                 else:
-                                    return "punctuator '}' expected but wasn't provided"
+                                    return False, "punctuator '}' expected but wasn't provided"
                             else:
-                                return "statements expected but weren't provided"
+                                return False, "statements expected but weren't provided"
                         else:
-                            return "punctuator '{' expected but wasn't provided"
+                            return False, "punctuator '{' expected but wasn't provided"
                     else:
-                        return "punctuator ')' expected but wasn't provided"
+                        return False, "punctuator ')' expected but wasn't provided"
                 else:
-                    return "parameter(s) expected but wasn't provided"
+                    return False, "parameter(s) expected but wasn't provided"
             else:
-                return "punctuator '(' expected but wasn't provided"
+                return False, "punctuator '(' expected but wasn't provided"
         else:
-            return "missing/unrecognized identifier"                
+            return False, "missing/unrecognized identifier"                
     else:
         return False
 
@@ -138,7 +158,7 @@ def PList(arg_list,scope_count):
             print('hello')
             if match('id'):
                 var_entry.name = token_list[index-1][2]
-                print(token_list[index-1][2])
+                # print(token_list[index-1][2])
                 arg_list.append(var_entry)
                 if token_list[index][0] == ',':
                     PList(arg_list, scope_count)
@@ -146,23 +166,19 @@ def PList(arg_list,scope_count):
                 else:
                     return
     else:
-        print('pls')
+        # print('pls')
         if match(')'):
             return True
         return False, "punctuator ',' or ')' expected but wasn't provided"
 
-# def Plist():
-#     if (match(',')):
-#         if (E()):
-#             if (Plist()):
-#                 return True
-#         else:
-#             return False, "expression expected but wasn't provided"
-#     else:
-#         return True
 
 def F():
-    if (match('(')):
+    # print(token_list[index])
+    if match('id'):
+        return True
+
+    elif match('('):
+        # print('here')
         if (E()):
             if (match(')')):
                 return True
@@ -171,20 +187,21 @@ def F():
         else:
             return False,"expression expected but wasn't provided"
             
-    elif (match('id')):
-        return True
     else:
         return False, "punctuator '(' or identifier expected but wasn't provided"
 
 def T_prime():
+    # print('hello2')
     if (match('*')):
+        # print('ello3')
         if (F()):
             if (T_prime()):
+                # print('nub')
                 return True
         else:
             return False, "factor expected but wasn't provided"
-    
     else:
+        print('hello')
         return True
     
 def T():
@@ -227,30 +244,16 @@ def AssignStmt():
         error_string = "identifier expected but wasn't provided"
         return False
 
-def OptionalAssign():
-    if (match('=')):
-            if (E()):
-                if match(';'):
-                    return True            
-    else:
-        return True
 
-def List():
-    if match(','):
-        if match('dt'):
-            if OptionalAssign():
-                if List():
-                    return True
-    else:
-        return True
 
 def DecStmts():
     if match('dt'):
         if match('id'):
             if OptionalAssign():
+                return True
+            else:
                 if List():
                     return True
-                    
         else:
             return False,"missing/unrecognized identifier"
     else:
@@ -258,7 +261,33 @@ def DecStmts():
         return False
 
 
+def OptionalAssign():
+    if (match('=')):
+        if (E()):
+            if match(';'):
+                return True
+            else:
+                return False
+                         
+    else:
+        return True
+
+def List():
+    if match(','):
+        if match('dt'):
+            if OptionalAssign():
+                return True
+            else:
+                if List():
+                    return True
+        else:
+            return False, "no dt given"
+    else:
+        return False, "error"
+
+
 def ForStmt():
+    # print('pls')
     if match('for'):
         if match('('):
             if Type():
@@ -287,10 +316,10 @@ def ForStmt():
                                                             error_string = "punctuator ')' expected but wasn't provided"
                                                             return False
                                                     else:
-                                                        error_string = "punctuator '+' expected but wasn't provided"
+                                                        error_string = "punctuator + expected but wasn't provided"
                                                         return False
                                                 else:
-                                                    error_string = "punctuator '+' expected but wasn't provided"
+                                                    error_string = "punctuator + expected but wasn't provided"
                                                     return False
                                             else:
                                                 error_string = "identifier expected but wasn't provided"
@@ -348,13 +377,12 @@ def IfStmt():
                     error_string = "relational operator expected but wasn't provided"
                     return False
         else:
-            print('here')
+            # print('here')
             error_string = "punctuator '(' expected but wasn't provided"
             return False
     else:
         error_string = "keyword 'if' expected but wasn't provided"
         return False
-
 
 
 def OptionalElse():
@@ -383,33 +411,33 @@ def ReturnStmt():
         error_string = "keyword 'return' expected but wasn't provided"
         return False
 
-def S_prime():
-    if Stmts():
+def Stmts():
+    if S_prime():
         return True
 
-def Stmts():
+def S_prime():
     if DecStmts():
-        if Stmts():
+        if S_prime():
             return True
         else:
             return False
     elif AssignStmt():
-        if Stmts():
+        if S_prime():
             return True
         else:
             return False
     elif ForStmt():
-        if Stmts():
+        if S_prime():
             return True
         else:
             return False
     elif IfStmt():
-        if Stmts():
+        if S_prime():
             return True
         else:
             return False
     elif ReturnStmt():
-        if Stmts():
+        if S_prime():
             return True
         else:
             return False
@@ -419,11 +447,12 @@ def Stmts():
 def test():
     global error_string
     test = Program()
-    if test:
+    print(test)
+    if test[0]:
         print("string is accepted")
     else:
         print("string is not accepted")
-        print(error_string)
+        
 
 
 test()

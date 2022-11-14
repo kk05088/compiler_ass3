@@ -1,4 +1,4 @@
 int foo(char sample)
 {
-int a = b;
+int a;
 }

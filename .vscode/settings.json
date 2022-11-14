@@ -1,3 +1,4 @@
 {
-    "C_Cpp.errorSquiggles": "Enabled"
+    "C_Cpp.errorSquiggles": "Enabled",
+    "python.pythonPath": "C:\\Users\\hp\\AppData\\Local\\Programs\\Python\\Python310\\python.exe"
 }
