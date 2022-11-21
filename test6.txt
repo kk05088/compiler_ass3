@@ -1,0 +1,7 @@
+int foo(char sample)
+{
+    int a;
+    int b;
+    int c;
+    c = a + b;
+}

@@ -27,7 +27,7 @@ def remove_brackets(tokens):
         tokens[i][0] = tokens[i][0][1:]
     return tokens
 
-test,id_info = main("test2.txt")
+test,id_info = main("test6.txt")
 
 global token_list
 token_list = remove_brackets(read_lex_output(test))
@@ -35,8 +35,9 @@ token_list.append(["EOF"])
 print(token_list)
 
 
-# #string for writing error messages
-
+# string for writing error messages
+# Declaration checks everytime 'id' is encoutered
+# Type compatibility check whenever Assignment rule is executed
 
 
 global index
@@ -61,7 +62,7 @@ def match(char):
 
         str = token_list[index][0]
 
-        # print("str:",str,"  char:", char)
+        print("str:",str,"  char:", char)
 
         if str == char:
             index +=1
@@ -115,11 +116,13 @@ def Program(): #function definition & will have synthesised attribute
                         if match('{'):
                             scope += 1
                             #this is also in functions scope
+                            
                             if Stmts(scope,entry):
                                 if match('}'):
                                     scope -= 1
                                     return True, 'lesgoo'
                                 else:
+                                    print('cycle')
                                     return False, "punctuator '}' expected but wasn't provided"
                             else:
                                 return False, "statements expected but weren't provided"
@@ -149,7 +152,7 @@ def ParamList(arg_list, scope,entry):
         if match('id'):
             # print('beta')
             var_entry.name = token_list[index-1][2]
-            entry.child_scope.append(var_entry)
+            entry.child_scope[scope].append(var_entry)
             # glob_table[scope]
             if PList(arg_list, scope, entry):
                 return True, arg_list
@@ -339,6 +342,7 @@ def ForStmt():
                                                                     if match('}'):
                                                                         return True
                                                                     else:
+                                                                        print('mj')
                                                                         return False, "punctuator '}' expected but wasn't provided"
                                                             else:
                                                                 return False, "punctuator '{' expected but wasn't provided"
@@ -385,6 +389,7 @@ def IfStmt():
                                             return True
                             
                                     else:
+                                        print('jjokocha')
                                         return False, "punctuator '}' expected but wasn't provided"
                             else:
                                 return False, "punctuator '{' expected but wasn't provided"
@@ -401,6 +406,7 @@ def OptionalElse():
     if match('else'):
         if match('{'):
             if Stmts():
+                print('loser')
                 if match('}'):
                     return True
     
@@ -476,7 +482,7 @@ def iterdict(d):
         # print(type(value))
         # return
         for x in value:
-            print(x.ptr, x.name, x.type, x.return_type, x.parent_scope, x.child_scope)
+            # print(x.ptr, x.name, x.type, x.return_type, x.parent_scope, x.child_scope)
         # if isinstance(value,list):
         #     print(value[0].name)
         # print(value.ptr)
