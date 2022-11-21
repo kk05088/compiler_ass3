@@ -1,5 +1,5 @@
 from Env import *
-from symTable import *
+from sym_table import *
 
 
 #semantic actions for the parser

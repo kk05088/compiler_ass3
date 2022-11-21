@@ -2,7 +2,7 @@
 from lib2to3.pgen2 import token
 from xml.etree.ElementTree import TreeBuilder
 from analyser import main
-from symTable import *
+from sym_table import *
 
 
 global glob_table
@@ -32,7 +32,7 @@ test,id_info = main("test2.txt")
 global token_list
 token_list = remove_brackets(read_lex_output(test))
 token_list.append(["EOF"])
-# print(token_list)
+print(token_list)
 
 
 # #string for writing error messages
@@ -52,6 +52,13 @@ def match(char):
         return
 
     else:
+        # if token_list[index-1][0] == 'dt':
+        #     str = token_list[index][1]
+        
+        # elif token_list[index-1][0] == 'id':
+        #     str = token_list[index[2]]
+        
+
         str = token_list[index][0]
 
         # print("str:",str,"  char:", char)
@@ -70,12 +77,12 @@ def Program(): #function definition & will have synthesised attribute
 
     global scope
 
-    glob_table[scope] = {}
+    glob_table[scope] = []
     
     entry = Id()
-    entry.in_scope = scope
-    glob_table[scope] = entry
-    print(glob_table)
+    entry.parent_scope = 'global'
+    glob_table[scope].append(entry)
+    # print(glob_table)
 
     # entry.scope = scope
 
@@ -88,9 +95,9 @@ def Program(): #function definition & will have synthesised attribute
             entry.name = token_list[index-1][2]
             if match('('):
                 # print('sup2')
-                entry.sym_t = {}
+                entry.child_scope = {}
                 scope += 1
-                entry.sym_t[scope] = {}
+                entry.child_scope[scope] = []
 
                 arg_list = []
 
@@ -129,11 +136,10 @@ def Program(): #function definition & will have synthesised attribute
     else:
         return False, "missing incorrect datatype"
 
-
 def ParamList(arg_list, scope,entry):
 
     var_entry = Id()
-    var_entry.in_scope = scope
+    var_entry.parent_scope = entry.name
 
     if match('dt'):
         # print('alpha')
@@ -142,7 +148,8 @@ def ParamList(arg_list, scope,entry):
 
         if match('id'):
             # print('beta')
-            var_entry.name = token_list[index-1][1]
+            var_entry.name = token_list[index-1][2]
+            entry.child_scope.append(var_entry)
             # glob_table[scope]
             if PList(arg_list, scope, entry):
                 return True, arg_list
@@ -153,12 +160,11 @@ def ParamList(arg_list, scope,entry):
     else:
         return False, "missing/incorrect datatype"
 
-
 def PList(arg_list, scope, entry):
 
 
     var_entry = Id()
-    var_entry.in_scope = scope
+    var_entry.parent_scope = scope
 
     
     if match('?'):
@@ -167,6 +173,9 @@ def PList(arg_list, scope, entry):
             # print('hello')
             if match('id'):
                 var_entry.name = token_list[index-1][2]
+                # print(var_entry.name)
+                # if var_entry.name == 4:
+                #     print('sister')
                 # print(token_list[index-1][2])
                 arg_list.append(var_entry)
 
@@ -176,15 +185,14 @@ def PList(arg_list, scope, entry):
         # print('pls')
         return False, "punctuator '?' or ')' expected but wasn't provided"
 
-
 def F(scope, entry):
     # print(token_list[index])
     var_entry = Id()
-    var_entry.in_scope = scope
+    var_entry.parent_scope = scope
 
     if match('id'):
-        var_entry.name = token_list[index-1][1]
-        entry.sym_t[scope] = var_entry
+        var_entry.name = token_list[index-1][2]
+        entry.child_scope[scope].append(var_entry)
         print(var_entry)
         return True
     
@@ -241,6 +249,7 @@ def E(scope, entry):
 
 def AssignStmt():
     if (match('id')):
+        print('abey')
         if (match('=')):
             if (E()):
                 if match(';'):
@@ -255,21 +264,22 @@ def AssignStmt():
     else:
         return False, "identifier expected but wasn't provided"
 
-
 def DecStmts(scope, entry):
 
     var = Id()
-    var.in_scope = scope
-    var.prev = entry.sym_t
+    var.parent_scope = scope
+    # var.par = entry.child_scope
 
     # print("in dec")
 
     if match('dt'):
         var.type = token_list[index-1][1]
         # print('here')
-
+        
         if match('id'):
-            var.name = var.type = token_list[index-1][1]
+            var.name = token_list[index-1][2]
+            entry.child_scope[scope].append(var)
+
             if OptionalAssign(scope, entry):
                 # print('bhaijaan')
                 return True
@@ -280,7 +290,6 @@ def DecStmts(scope, entry):
             return False,"missing/unrecognized identifier"
     else:
         return False, "missing/incorrect datatype"
-
 
 def OptionalAssign(scope, entry):
 
@@ -307,7 +316,6 @@ def List(scope, entry):
             return False, "no dt given"
     else:
         return False, "error"
-
 
 def ForStmt():
     # print('pls')
@@ -389,7 +397,6 @@ def IfStmt():
     else:
         return False, "keyword 'if' expected but wasn't provided"
 
-
 def OptionalElse():
     if match('else'):
         if match('{'):
@@ -399,7 +406,6 @@ def OptionalElse():
     
     else:
         return True
-
 
 def ReturnStmt():
     if match('return'):
@@ -442,21 +448,75 @@ def S_prime(arg_list, scope):
         # else:
         #     return False, 'something wrong with statements'
 
+
+def sym_table_traverse(sym_table):
+
+    #child_scopeable is a dict
+    # print(sym_table.child_scope,'oops')
+
+    if sym_table.child_scope != None:
+        
+        print('lmfao')
+        
+        # print(sym_table.child_scope[1].ptr)
+        # print(sym_table.child_scope[1].name)
+        # print(sym_table.child_scope[1].type)
+        # print(sym_table.child_scope[1].return_type)
+        # print(sym_table.child_scope[1].parent_scope)
+        # print(sym_table.child_scope[1].child_scope)
+        # print(sym_table.type)
+        # print(sym_table.return_type)
+        # print(sym_table.parent_scope)
+        # print(sym_table.child_scope)
+        
+
+    
+def iterdict(d):
+    for key,value in d.items():
+        # print(type(value))
+        # return
+        for x in value:
+            print(x.ptr, x.name, x.type, x.return_type, x.parent_scope, x.child_scope)
+        # if isinstance(value,list):
+        #     print(value[0].name)
+        # print(value.ptr)
+        # print (k,":",v.child_scope)
+        
+        
+            # print(type(value.child_scope))
+            if isinstance(x.child_scope, dict):
+            # print('idk')
+                iterdict(x.child_scope)
+
+            else:            
+                print (key,":",x.name)
+
+
+
 def test():
 
     test = Program()
 
-    print(glob_table[scope])
-    # for i in glob_table[scope]:
-    #     print(i)
+    # print(glob_table[scope],'bwois')
+    iterdict(glob_table)
+    # for i in glob_table:
+        # print(glob_table[i].ptr)
+        # print(glob_table[i].name)
+        # print(glob_table[i].type)
+        # print(glob_table[i].return_type)
+        # print(glob_table[i].parent_scope)
+        # print(glob_table[i].child_scope)
+
+        # print(sym_table_traverse(glob_table[i]),'ayo')
+        # print(glob_table[i].child_scope)
     # print(test)
+
     if test[0]:
-        print(test[1])
-        # print("string is accepted")
+        # print(test[1])
+        print("string is accepted")
     else:
         print("string is not accepted")
         print("Error:",test[1])
         
-
 
 test()
