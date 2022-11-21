@@ -1,0 +1,90 @@
+Program.s -> dt.t id.n {1} (ParamList.pt){Stmts.s}
+
+ParamList.pt -> dt.t id.n PList.pt1 {2}
+
+PList.lt -> ,dt.t id.n Plist.lt1 {3} |  ϵ
+
+Stmts.s -> DecStmt.s {1} | AssignStmt.s {1} | ForStmt.s {1} | IsStmt.s {1} | ReturnStmt.s,rt {1} | ϵ
+
+DecStmts.s -> dt.t id.n {1} OptionalAssign.exp-t {4} List.s
+
+List.s -> ,dt.t OptionalAssign.exp-t {4} List |  ϵ
+
+OptionalAssign.exp-t -> = E.t1 {exp-t = t1}; |  ϵ
+
+AssignStmt.s -> id.n {1} E;
+
+E.v10-s -> T.v6-s E'.v9-s {v10-s = v9-s}
+
+E'.v9-s -> +T.v6,v7 {7} E'.v8,v9-s {v9-s (synthesized) = v8}   |  ϵ
+
+T.v6-s -> F.v T'.v5-s {v6-s (synthesized)  = v5-s}
+
+T'.v5-s -> *F.v1 {5}  T'.v2,v3 {6} {v5-s (synthesized) = v4}  |  ϵ
+
+F.v -> id.n {F.v = id.n}
+
+ForStmt.s -> for(Type.t1 id.n {1} = E.exp-t {8}; E.exp-t relop E.exp-t1 {9}; id++){Stmts}
+
+Type.t1 -> dt.t {t1 = t) |  ϵ
+
+IfStmt.s -> if(E relop E {9}){Stmts.s} OptionalElse.s
+
+OptionalElse.s -> else {Stmts.s} |  ϵ
+
+ReturnStmt.rt -> return E.exp-t {rt = exp-t}
+
+
+
+
+
+
+
+Rules:-
+
+{1}: if checkDeclaration(n,s) == False
+	enterType(n,s,t)
+      else
+	raise(RedeclarationError)
+
+{2}: if pt1 != NULL
+      	pt = t + 'x' + pt1
+      else
+	pt = t
+
+{3}: if lt1 != NULL
+	lt = t + 'x' lt1
+      else
+	lt = t
+
+{4}: checkType(t, exp-t)
+
+{5}: Operate(v, v1, *)
+	checkType(v, v1)
+	return v2
+
+{6}: Operate(v2, v3, *)
+	checkType(v3, v3)
+	return v4
+
+{7}: Operate(v6, v7, +)
+	checkType(v6, v7)
+	return v8
+
+{8}: checkType(t1, exp-t)
+
+{9}: Should result in a boolean value, else generate error.
+
+
+
+
+
+
+
+
+
+
+
+
+
+	
